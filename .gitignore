@@ -1,0 +1,10 @@
+# n8n runtime data
+data/
+
+# Docker stuff
+node_modules/
+*.log
+
+# backups
+*.tar.gz
+*.zip
