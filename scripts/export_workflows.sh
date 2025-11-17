@@ -1,11 +1,30 @@
 #!/bin/bash
+set -e
 
-# Export all n8n workflows to a Git-friendly folder
+CONTAINER="n8n-docker-n8n-1"
+EXPORT_PATH="/home/node/.n8n"
+TMP_PATH="/tmp/workflows"
+HOST_OUTPUT_DIR="./workflows"
+
 echo "Exporting n8n workflows..."
 
-docker compose exec n8n n8n export:workflow --all --output=/data/workflows
+docker exec $CONTAINER n8n export:workflow --output=$TMP_PATH
 
-echo "Copying workflows from container to host..."
-cp -r data/workflows/* workflows/
+echo "Checking export result in container..."
+TYPE=$(docker exec $CONTAINER sh -c "if [ -d $TMP_PATH ]; then echo DIR; elif [ -f $TMP_PATH ]; then echo FILE; else echo NONE; fi")
 
-echo "Done! Workflows exported to ./workflows/"
+mkdir -p $HOST_OUTPUT_DIR
+
+if [ "$TYPE" = "DIR" ]; then
+    echo "Detected directory export."
+    docker cp $CONTAINER:$TMP_PATH/. $HOST_OUTPUT_DIR/
+elif [ "$TYPE" = "FILE" ]; then
+    echo "Detected single-file export."
+    docker cp $CONTAINER:$TMP_PATH $HOST_OUTPUT_DIR/workflows.json
+else
+    echo "Error: No workflows exported!"
+    exit 1
+fi
+
+echo "Done! Workflows exported to $HOST_OUTPUT_DIR/"
+
