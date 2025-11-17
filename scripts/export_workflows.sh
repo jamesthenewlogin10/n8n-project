@@ -8,7 +8,7 @@ HOST_OUTPUT_DIR="./workflows"
 
 echo "Exporting n8n workflows..."
 
-docker exec $CONTAINER n8n export:workflow --output=$TMP_PATH
+docker exec $CONTAINER n8n export:workflow --all --output=$TMP_PATH
 
 echo "Checking export result in container..."
 TYPE=$(docker exec $CONTAINER sh -c "if [ -d $TMP_PATH ]; then echo DIR; elif [ -f $TMP_PATH ]; then echo FILE; else echo NONE; fi")
